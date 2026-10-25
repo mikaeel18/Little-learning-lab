@@ -1,7 +1,8 @@
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '../../../lib/admin';
+import { POLICY_DEFAULTS } from '../../../lib/policies';
 
-const FIELDS = [['home_intro', 'Home page introduction'], ['about_me', 'About Me page']];
+const FIELDS = [['home_intro', 'Home page introduction'], ['about_me', 'About Me page'], ['privacy', 'Privacy Policy (draft)'], ['terms', 'Terms and Conditions (draft)'], ['refunds', 'Digital Product and Refund Policy (draft)']];
 
 async function saveText(fd) {
   'use server';
@@ -21,7 +22,7 @@ export default async function Text() {
       <form action={saveText}>
         {FIELDS.map(([key, label]) => (
           <label key={key}>{label}
-            <textarea name={key} rows="7" defaultValue={v[key] || ''} style={{ display: 'block', width: '100%', marginBottom: 14 }} />
+            <textarea name={key} rows={POLICY_DEFAULTS[key] ? 16 : 7} defaultValue={v[key] ?? POLICY_DEFAULTS[key] ?? ''} style={{ display: 'block', width: '100%', marginBottom: 14 }} />
           </label>
         ))}
         <button type="submit">Save text</button>

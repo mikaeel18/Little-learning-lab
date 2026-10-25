@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase/server';
 import { getCart, setCart } from '../../../../lib/cart';
 import { rand } from '../../../../lib/curriculum';
+import { admin } from '../../../../lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,7 @@ async function addToCart(fd) {
 export default async function Product({ params }) {
   const { data: p } = await supabase().from('products').select('*').eq('slug', params.slug).eq('status', 'published').maybeSingle();
   if (!p) notFound();
+  const files = p.price_cents === 0 ? (await admin().from('product_files').select('id, file_name, size_bytes').eq('product_id', p.id)).data : null;
   const row = (k, v) => v ? <tr><td>{k}</td><td>{v}</td></tr> : null;
   return (
     <section className="w two">
@@ -32,7 +34,7 @@ export default async function Product({ params }) {
         <h2>{rand(p.price_cents)}</h2>
         {p.price_cents > 0
           ? <form action={addToCart}><input type="hidden" name="id" value={p.id} /><button className="btn" type="submit">Add to cart</button></form>
-          : <p className="note">Free downloads are switched on in the next stage.</p>}
+          : (files?.length ? <div>{files.map((f) => <p key={f.id}><a className="btn" href={`/download/${f.id}`}>Download {f.file_name}</a></p>)}</div> : <p className="note">The file for this free resource is being added. Please check back soon.</p>)}
       </div>
     </section>);
 }
