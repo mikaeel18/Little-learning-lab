@@ -18,11 +18,11 @@ export default async function Home() {
   const { data: text } = await sb.from('site_text').select('value').eq('key', 'home_intro').maybeSingle();
   const { data: reviews } = await sb.from('reviews').select('id, rating, body, products(title)').eq('approved', true).limit(3);
   return (<>
-    <div className="hero"><div className="w">
+    <div className="hero"><div className="w hero-in"><div>
       <h1>Little Lab Learning</h1><p><b>Where every lesson sparks a little wonder.</b></p>
       <p>{text?.value || 'Ready-to-use resources for South African teachers and parents, Grade R to Grade 7.'}</p>
       <p><Link className="btn" href="/shop">Browse resources</Link> <Link className="btn alt" href="/shop?price=free">Free downloads</Link></p>
-    </div></div>
+    </div><img className="hero-logo" src="/logo.jpg" alt="Little Lab Learning logo: a smiling science flask" width="320" height="320" /></div></div>
     {!!featured?.length && <section className="w"><h2>Featured</h2><div className="grid">{featured.map((p) => <Card key={p.id} p={p} />)}</div></section>}
     <section className="w"><h2>New arrivals</h2>
       {fresh?.length ? <div className="grid">{fresh.map((p) => <Card key={p.id} p={p} />)}</div> : <p className="note">New resources are coming soon.</p>}
