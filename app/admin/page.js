@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '../../lib/admin';
 
@@ -17,12 +16,12 @@ export default async function Admin() {
   return (
     <main style={{ maxWidth: 800, margin: '30px auto', padding: 18, fontFamily: 'sans-serif' }}>
       <h1>Your products</h1>
-      <p><Link href="/admin/products/new">Add a product</Link></p>
+      <p><a href="/admin/products/new">Add a product</a></p>
       {!products?.length && <p>No products yet. Add your first one.</p>}
       <table style={{ width: '100%' }}><tbody>
         {products?.map((p) => (
           <tr key={p.id}>
-            <td>{p.code}</td><td><Link href={`/admin/products/${p.id}`}>{p.title}</Link></td>
+            <td>{p.code}</td><td><a href={`/admin/products/${p.id}`}>{p.title}</a></td>
             <td>{p.price_cents ? 'R' + (p.price_cents / 100).toFixed(2) : 'Free'}</td>
             <td>
               <form action={togglePublish}>

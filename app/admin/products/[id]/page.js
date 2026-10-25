@@ -1,7 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'crypto';
-import Link from 'next/link';
 import { requireAdmin } from '../../../../lib/admin';
 import { GRADES, SUBJECTS } from '../../../../lib/curriculum';
 import { COLLECTIONS } from '../../../../lib/collections';
@@ -90,7 +89,7 @@ export default async function Edit({ params, searchParams }) {
   const f = { display: 'block', width: '100%', marginBottom: 12 };
   return (
     <main style={{ maxWidth: 560, margin: '30px auto', padding: 18, fontFamily: 'sans-serif' }}>
-      <p><Link href="/admin">Back to products</Link></p>
+      <p><a href="/admin">Back to products</a></p>
       <h1>{p.title}</h1>
       {searchParams?.error && <p role="alert">{MSG[searchParams.error] || 'Something went wrong.'}</p>}
       {(searchParams?.saved || searchParams?.uploaded || searchParams?.removed) && <p role="status">Done.</p>}
