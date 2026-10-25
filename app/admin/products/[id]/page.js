@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { requireAdmin } from '../../../../lib/admin';
 import { GRADES, SUBJECTS } from '../../../../lib/curriculum';
 import { COLLECTIONS } from '../../../../lib/collections';
-import { putFile, deleteFile } from '../../../../lib/r2';
+import { putFile, deleteFile } from '../../../../lib/storage';
 
 const MAX = 25 * 1024 * 1024;
 const here = (id, q) => `/admin/products/${id}?${q}`;
@@ -47,9 +47,10 @@ async function upload(fd) {
   if (!real) redirect(here(id, 'error=type'));
   const safe = name.replace(/[^a-z0-9._-]/g, '_').slice(-80);
   const key = `products/${id}/${randomUUID()}-${safe}`;
-  await putFile(key, buf, ext === 'pdf' ? 'application/pdf' : 'application/zip');
+  const up = await putFile(sb, key, buf, ext === 'pdf' ? 'application/pdf' : 'application/zip');
+  if (up.error) redirect(here(id, 'error=save'));
   const { error } = await sb.from('product_files').insert({ product_id: id, storage_key: key, file_name: safe, size_bytes: file.size });
-  if (error) { await deleteFile(key); redirect(here(id, 'error=save')); }
+  if (error) { await deleteFile(sb, key); redirect(here(id, 'error=save')); }
   revalidatePath(`/admin/products/${id}`);
   redirect(here(id, 'uploaded=1'));
 }
@@ -59,7 +60,7 @@ async function removeFile(fd) {
   const sb = await requireAdmin();
   const id = String(fd.get('id'));
   const { data: f } = await sb.from('product_files').select('id, storage_key').eq('id', String(fd.get('file_id'))).single();
-  if (f) { await deleteFile(f.storage_key); await sb.from('product_files').delete().eq('id', f.id); }
+  if (f) { await deleteFile(sb, f.storage_key); await sb.from('product_files').delete().eq('id', f.id); }
   revalidatePath(`/admin/products/${id}`);
   redirect(here(id, 'removed=1'));
 }
@@ -70,7 +71,7 @@ async function removeProduct(fd) {
   const id = String(fd.get('id'));
   if (fd.get('sure') !== 'on') redirect(here(id, 'error=confirm'));
   const { data: files } = await sb.from('product_files').select('storage_key').eq('product_id', id);
-  for (const f of files || []) await deleteFile(f.storage_key);
+  for (const f of files || []) await deleteFile(sb, f.storage_key);
   const { error } = await sb.from('products').delete().eq('id', id);
   if (error) redirect(here(id, 'error=orders'));   // products that were already sold cannot be deleted: hide them instead
   revalidatePath('/admin');
